@@ -1,6 +1,6 @@
 package com.shpakovskiy.soundrecognizer
 
-import com.shpakovskiy.soundrecognizer.domain.service.SoundService
+import com.shpakovskiy.soundrecognizer.data.service.SoundService
 import io.grpc.ServerBuilder
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.Executors
