@@ -1,3 +1,5 @@
+.DS_Store
+
 # User-specific stuff
 .idea/**/workspace.xml
 .idea/**/tasks.xml
@@ -20,6 +22,8 @@
 # Gradle
 .idea/**/gradle.xml
 .idea/**/libraries
+
+.gradle/
 
 # IntelliJ
 out/

@@ -44,15 +44,16 @@ class SoundService : SoundServiceGrpc.SoundServiceImplBase() {
 
         request?.let {
             val nameParts = it.fileName.split(".") // For now assume, that we have only one dot here
-            val recordingName =
-                "recordings/baseRecordings/${nameParts[0]}-${System.currentTimeMillis()}.${nameParts[1]}"
+            val recordingName = "recordings/baseRecordings/${nameParts[0]}-${System.currentTimeMillis()}.${nameParts[1]}"
 
-            val ppp = Files.write(
+            Files.write(
                 Paths.get(recordingName),
                 it.soundValues.toByteArray()
             )
 
-            // soundRecognizer.loadRecording(ppp.absolutePathString())
+            soundRepository.loadSound(Paths.get(recordingName).absolutePathString()) { loadedSound ->
+                soundRecognizer.addKnownSound(loadedSound, it.fileName)
+            }
         }
 
         println("Received file: ${request?.fileName} ${request?.soundValues?.size()} bytes")
