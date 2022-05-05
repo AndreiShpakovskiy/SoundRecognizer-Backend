@@ -1,5 +1,6 @@
 package com.shpakovskiy.soundrecognizer.data.service
 
+import com.google.protobuf.RepeatedFieldBuilderV3
 import com.shpakovskiy.soundrecognizer.SoundRecognizerService
 import com.shpakovskiy.soundrecognizer.SoundServiceGrpc
 import com.shpakovskiy.soundrecognizer.data.repository.DefaultSoundRepository
@@ -18,16 +19,16 @@ class SoundService : SoundServiceGrpc.SoundServiceImplBase() {
     init {
         val baseSoundsDirectory = File("recordings/baseRecordings")
         val directoryPath = baseSoundsDirectory.absolutePath
-        val directoryFiles = baseSoundsDirectory.list().toMutableList()
-        //soundRecognizer.loadBaseRecordings(directoryFiles.map { "$directoryPath/$it" })
 
-        directoryFiles.forEach {
+        baseSoundsDirectory.list()?.forEach {
             soundRepository.loadSound("$directoryPath/$it") { sound ->
                 //System.out.println(soundSourcePath)
                 val pathParts = it.split("/")
                 val noExtensionName = pathParts[pathParts.size - 1].split("\\.").toTypedArray()[0]
                 val nameParts = noExtensionName.split("-").toTypedArray()
                 val objectName = nameParts[nameParts.size - 2].lowercase(Locale.getDefault())
+
+                println(">>> Object name: $objectName")
 
                 soundRecognizer.addKnownSound(sound, objectName)
             }
@@ -44,15 +45,22 @@ class SoundService : SoundServiceGrpc.SoundServiceImplBase() {
 
         request?.let {
             val nameParts = it.fileName.split(".") // For now assume, that we have only one dot here
-            val recordingName = "recordings/baseRecordings/${nameParts[0]}-${System.currentTimeMillis()}.${nameParts[1]}"
-
-            Files.write(
-                Paths.get(recordingName),
-                it.soundValues.toByteArray()
+            val recordingPath = Paths.get(
+                "recordings/baseRecordings/${nameParts[0]}-${System.currentTimeMillis()}.${nameParts[1]}".replace(
+                    ":",
+                    "_"
+                )
             )
 
-            soundRepository.loadSound(Paths.get(recordingName).absolutePathString()) { loadedSound ->
-                soundRecognizer.addKnownSound(loadedSound, it.fileName)
+            Files.write(recordingPath, it.soundValues.toByteArray())
+
+            val pathParts = it.fileName.split("/")
+            val noExtensionName = pathParts[pathParts.size - 1].split("\\.").toTypedArray()[0]
+            val noExtensionNameParts = noExtensionName.split("-").toTypedArray()
+            val objectName = noExtensionNameParts[noExtensionNameParts.size - 2].lowercase(Locale.getDefault())
+
+            soundRepository.loadSound(recordingPath.absolutePathString()) { loadedSound ->
+                soundRecognizer.addKnownSound(loadedSound, objectName)
             }
         }
 
@@ -73,34 +81,35 @@ class SoundService : SoundServiceGrpc.SoundServiceImplBase() {
     ) {
         request?.let {
             val nameParts = it.fileName.split(".") // For now assume, that we have only one dot here
-            val fileName =
-                "recordings/recognitionRequests/${nameParts[0]}-${System.currentTimeMillis()}.${nameParts[1]}"
+            val filePath = Paths.get(
+                "recordings/recognitionRequests/${nameParts[0]}-${System.currentTimeMillis()}.${nameParts[1]}".replace(
+                    ":",
+                    "_"
+                )
+            )
             val soundBytes = it.soundValues.toByteArray()
 
-            Files.write(
-                Paths.get(fileName),
-                soundBytes
-            )
+            Files.write(filePath, soundBytes)
 
             println("Recognition request: ${request.fileName} - ${soundBytes.size} bytes")
 
-            soundRepository.loadSound(Paths.get(fileName).absolutePathString()) { sound ->
+            soundRepository.loadSound(filePath.absolutePathString()) { sound ->
                 val bestMatches = soundRecognizer.getBestMatch(sound)
 
                 val response = SoundRecognizerService.RecognitionResult.newBuilder()
+                response.recognitionStatus = SoundRecognizerService.RecognitionResult.RecognitionStatus.SUCCESS
 
                 bestMatches?.forEach { matchValue ->
-                    response.addRecognitionResult(
+                    response.recognizedSounds.recognitionResultList.add(
                         SoundRecognizerService.RecognizedSound
                             .newBuilder()
                             .setSoundSourceName(matchValue.key)
-                            .setProbability(matchValue.value)
                             .build()
                     )
                 }
 
                 if (bestMatches == null) {
-                    println("Oops...")
+                    response.recognitionStatus = SoundRecognizerService.RecognitionResult.RecognitionStatus.FAILURE
                 }
 
                 responseObserver?.onNext(response.build())
