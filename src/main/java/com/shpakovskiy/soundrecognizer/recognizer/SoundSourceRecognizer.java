@@ -21,7 +21,9 @@ public class SoundSourceRecognizer implements SoundRecognizer {
     public static final int FOURIER_WINDOW_SIZE = 4096;
 
     private final int[] FREQUENCY_RANGE = new int[]{
-            10, 30, 50, 70, 90, 110
+//            10, 30, 50, 70
+//            10, 40, 70, 100
+            10, 25, 45, 70
     };
 
     @Override
@@ -204,7 +206,7 @@ public class SoundSourceRecognizer implements SoundRecognizer {
                 Integer value = songMatches.get(songName);
                 System.out.println(songName + " -> " + value);
 
-                if (iterationNumber < 5) {
+                if (iterationNumber < 3) {
                     resultMap.put(songName, value.doubleValue());
                 }
 

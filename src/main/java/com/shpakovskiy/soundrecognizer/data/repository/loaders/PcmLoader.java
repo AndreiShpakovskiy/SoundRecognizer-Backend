@@ -24,7 +24,7 @@ public class PcmLoader implements FormattedLoader {
 
             System.out.println("Raw length: " + rawAudioData.length);
 
-            AudioFormat audioFormat = new AudioFormat(44100, 16, 1, true, true);
+            AudioFormat audioFormat = new AudioFormat(44100, 16, 1, true, false);
             AudioInputStream audioFileRawInputStream = new AudioInputStream(new ByteArrayInputStream(rawAudioData), audioFormat, rawAudioData.length);
 
             AudioFormat baseFormat = audioFileRawInputStream.getFormat();
