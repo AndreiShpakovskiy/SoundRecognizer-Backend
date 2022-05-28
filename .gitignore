@@ -1,3 +1,5 @@
+.DS_Store
+
 # User-specific stuff
 .idea/**/workspace.xml
 .idea/**/tasks.xml
@@ -21,6 +23,11 @@
 .idea/**/gradle.xml
 .idea/**/libraries
 
+.gradle/
+
 # IntelliJ
 out/
 build/
+
+# Audio files
+recordings/
