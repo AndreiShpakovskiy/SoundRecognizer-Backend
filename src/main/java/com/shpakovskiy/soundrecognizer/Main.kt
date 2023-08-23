@@ -1,5 +1,6 @@
 package com.shpakovskiy.soundrecognizer
 
+import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -34,10 +35,7 @@ data class Sound(
 fun main() {
     embeddedServer(Netty, port = 8099) {
         routing {
-            get("/") {
-                call.respond("Want to home")
-            }
-            post("/audio") {
+            post("/submit") {
                 val multipart = call.receiveMultipart()
                 val out = arrayListOf<String>()
                 multipart.forEachPart { part: PartData ->
@@ -60,7 +58,38 @@ fun main() {
 
                     part.dispose()
                 }
-                call.respondText(out.joinToString("; "))
+
+                println("Submit: $out")
+
+                call.respond(HttpStatusCode.Accepted)
+            }
+            post("/recognize") {
+                val multipart = call.receiveMultipart()
+                val out = arrayListOf<String>()
+                multipart.forEachPart { part: PartData ->
+                    out += when (part) {
+                        is PartData.FormItem -> {
+                            "FormItem(${part.name},${part.value})"
+                        }
+
+                        is PartData.FileItem -> {
+                            val bytes = part.streamProvider().readBytes()
+                            "FileItem(${part.name}, ${part.originalFileName}, ${bytes.size})"
+                        }
+
+                        is PartData.BinaryItem -> {
+                            "BinaryItem(${part.name})"
+                        }
+
+                        else -> "Unknown"
+                    }
+
+                    part.dispose()
+                }
+
+                println("Recognize: $out")
+
+                call.respond("Recognized Object")
             }
         }
     }.start(wait = true)

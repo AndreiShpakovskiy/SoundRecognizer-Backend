@@ -17,12 +17,14 @@ public class WavLoader implements FormattedLoader {
         try (AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(sourcePath))) {
 
             AudioFormat soundProperties = audioInputStream.getFormat();
-            byte[] rawAudioBytes = audioInputStream.readAllBytes();
+            // byte[] rawAudioBytes = audioInputStream.readAllBytes();
 
-            return new Sound(
-                    RawDataFormatter.retrieveSoundValues(rawAudioBytes, soundProperties.getSampleSizeInBits() / Byte.SIZE),
-                    soundProperties
-            );
+//            return new Sound(
+//                    RawDataFormatter.retrieveSoundValues(rawAudioBytes, soundProperties.getSampleSizeInBits() / Byte.SIZE),
+//                    soundProperties
+//            );
+
+            return null;
         } catch (IOException | UnsupportedAudioFileException e) {
             System.err.println("Error while loading WAV file");
             e.printStackTrace();

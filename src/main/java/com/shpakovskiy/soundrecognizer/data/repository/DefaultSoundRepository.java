@@ -9,7 +9,7 @@ import java.util.Map;
 
 //TODO: Add JavaDoc.
 public class DefaultSoundRepository implements SoundRepository {
-    private final Map<String, FormattedLoader> formattedLoaders = new HashMap<>() {{
+    private final Map<String, FormattedLoader> formattedLoaders = new HashMap() {{
         put("pcm", new PcmLoader());
         put("wav", new WavLoader());
     }};
